@@ -4,6 +4,7 @@
 //chequeamod documentacion
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 
 // Your web app's Firebase configuration, esto nos los da firebase
@@ -21,6 +22,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 // inicializamos getAuth
 const auth = getAuth(app)
+//inicializamos firestore
+const db = getFirestore(app);
 
 //exportamos auth para usarla en otros componentes
-export { auth }
+export { auth, db }

@@ -4,7 +4,7 @@ import { ref, computed } from 'vue'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'
 import { auth } from '../firebaseConfig'
 import { useRouter }  from 'vue-router'
-
+import { useDataBase } from './dataBase'
 
 
 export const useUserStore = defineStore('userStore', () => {
@@ -68,6 +68,15 @@ export const useUserStore = defineStore('userStore', () => {
 // usamos el metodo signOut de firebase
 // segun la documentación este no conlleva respuesta por tanto si falla, tirará directamente el error
  const logOut = async () => {
+  //RESET STORE Y COMUNICACIÓN ENTRE STORES
+  //necesito resetear la info de la bbdd cuando hago logout
+  //Importo la store donde llamo a la bbdd y l ainicializo aqui dentro
+  //si tengo que usar esta store en otro action, tengo que inicilizarlo dentro de cada action
+  const dataBaseStore = useDataBase()
+  const { $reset } = dataBaseStore
+  //$reset() metodo de pinia no funciona para setup
+  //creo mi propio metodo en database store
+  $reset()
     try {
         await signOut(auth)
         //limpiamos userData para que este vacío de nuevo
@@ -98,6 +107,9 @@ const currentUser = () => {
         resolve(user);
       } else {
         userData.value = null;
+        //aqui tabn reseteo bbdd
+        const dataBaseStore = useDataBase()
+        dataBaseStore.$reset()
         resolve(null);
       }(error) => {
         reject(error);
