@@ -1,14 +1,19 @@
 import { defineStore} from 'pinia'
 import { ref } from 'vue'
-import { collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from '../firebaseConfig'
 import { nanoid } from 'nanoid'
+import { useRouter }  from 'vue-router'
 
 
 export const useDataBase = defineStore('dataBaseStore', () => {
+
+//router
+    const router = useRouter()
 //state
     const documents = ref([])
     const loadingDoc = ref(false)
+
 
 //actions
 //$reset de pinia no funciona para setip, tengo que crear mi propio metodo reset e importar
@@ -85,8 +90,68 @@ export const useDataBase = defineStore('dataBaseStore', () => {
 
     }
 
+    //le pasamos el id, ya que necesitamos saber qué documento estamos viendo
+    const readUrl = async (id) => {
+        loadingDoc.value = true
+        try {
+            const docRef = doc(db, 'urls', id)
+            //usamos getDoc para coger un unico documento
+            const docSnap  = await getDoc(docRef)
+
+            if(!docSnap.exists()){
+                throw new Error ("no existe el doc")
+            }
+       
+            if(docSnap.data().user !== auth.currentUser.uid){
+                throw new Error ("no le pertenece ese documento")
+            }
+            //del documento necesitamos la url, en este caso el name
+            return docSnap.data().name
+
+        } catch (error) {
+            console.log(error)
+        } finally {
+            loadingDoc.value =false
+
+        }
+    }
+
+    // necesitamos el id del documento que queremos actualizar y la url (name)
+    const updateUrl = async(id, name) => {
+        try {
+            const docRef = doc(db, 'urls', id)
+            const docSnap  = await getDoc(docRef)
+            if(!docSnap.exists()){
+                throw new Error ("no existe el doc")
+            }
+        //si es el usuario autenticado podemos actualizar la url, en este caso naem
+        // usamos map, para recorrer el array y hacer una funcion sobre cada elemento
+        //si el id del item es igual al id que le pasemos, entonces devolvemos todo el objeto de item y el name cambiado
+        //si no coincide el id, devolvemos todo item
+        //usamos map porque debe devolver todos los elementos de mi array, filter en cambio puede eliminar objetos del array
+            if(docSnap.data().user === auth.currentUser.uid){
+                await updateDoc(docRef, {
+                    name:name
+                })
+                documents.value = documents.value.map((item) =>{
+                   return item.id === id ? {...item, name:name} : item
+                    //una vez actualizado pusheamos al usuario a la pagina de inicio
+                
+                })
+                router.push('/')
+            } else {
+                throw new Error ("no eres el autor")
+            }
+            
+            
+        } catch (error) {
+            console.log(error)
+        }finally {
+
+        }
+    }
     // le pasamos como argumento el ID de la colleccion
-    //e lid que hemos agregado en addUrl
+    //el id que hemos agregado en addUrl
     const deleteUrl = async (id) => {
         try {
             //pongo esto en una constante por que lo voy a usar en varios métodos de firestore
@@ -114,5 +179,5 @@ export const useDataBase = defineStore('dataBaseStore', () => {
 
         }
     }
-        return { documents, getUrls, loadingDoc, addUrl, $reset, deleteUrl }
+        return { documents, getUrls, loadingDoc, addUrl, $reset, deleteUrl, readUrl, updateUrl }
 })
