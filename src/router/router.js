@@ -27,15 +27,17 @@ const requireAuth = async (to, from, next) =>{
 }
 
 const routes = [
+
     //agegamos el beforeEnter -> significa que antes de entrar en esta ruta siemper tiene que
     //chequear la funcion requireAuth
-    {path: '/', component: Home, beforeEnter: requireAuth},
+    {path: '/', component: Home, beforeEnter: requireAuth, name: 'home'},
     //ruta protegida para editar- solo los autenticados pueden acceder
     // necesito que la url sea dinamica para pintar el id del usuario
     //este id, necesito consumirlo en la vista
-    {path: '/editar/:id', component: Editar, beforeEnter: requireAuth},
-    {path: '/login', component: Login},
-    {path: '/register', component: Register}
+    {path: '/login', component: Login, name: 'login'},
+    {path: '/register', component: Register, name: 'register'},
+    {path: '/editar/:id', component: Editar, beforeEnter: requireAuth, name: 'editar'},
+
 ]
 
 const router = createRouter({

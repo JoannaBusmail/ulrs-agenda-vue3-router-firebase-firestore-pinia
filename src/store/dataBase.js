@@ -13,6 +13,7 @@ export const useDataBase = defineStore('dataBaseStore', () => {
 //state
     const documents = ref([])
     const loadingDoc = ref(false)
+    const loadingUrl = ref(false)
 
 
 //actions
@@ -62,6 +63,7 @@ export const useDataBase = defineStore('dataBaseStore', () => {
     }
 
     const addUrl = async (name) => {
+        loadingUrl.value = true
     
     try {
         const objectDoc = {
@@ -75,17 +77,16 @@ export const useDataBase = defineStore('dataBaseStore', () => {
         }
         //usamos add poruque me genera un ID de cada doc
         const docRef = await addDoc (collection(db, "urls"), objectDoc)
-        console.log(docRef.id)
         documents.value.push({
          ...objectDoc,
          id:docRef.id
         })
 
     } catch (error) {
-        console.log(error)
+        console.log(error.code)
         
     } finally {
-
+        loadingUrl.value=false
     }
 
     }
@@ -153,6 +154,7 @@ export const useDataBase = defineStore('dataBaseStore', () => {
     // le pasamos como argumento el ID de la colleccion
     //el id que hemos agregado en addUrl
     const deleteUrl = async (id) => {
+        loadingUrl.value = true
         try {
             //pongo esto en una constante por que lo voy a usar en varios métodos de firestore
             const docRef = doc(db, 'urls', id)
@@ -174,10 +176,11 @@ export const useDataBase = defineStore('dataBaseStore', () => {
             //esto lo elimina de la vista
             documents.value = documents.value.filter(item=>item.id !==id)
         } catch (error) {
-            console.log(error)
+            console.log(error.code)
+            return error.message
         }finally {
-
+            loadingUrl.value= false
         }
     }
-        return { documents, getUrls, loadingDoc, addUrl, $reset, deleteUrl, readUrl, updateUrl }
+        return { documents, getUrls, loadingDoc, loadingUrl, addUrl, $reset, deleteUrl, readUrl, updateUrl }
 })

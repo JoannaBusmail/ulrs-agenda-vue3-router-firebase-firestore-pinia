@@ -1,7 +1,7 @@
 import { defineStore} from 'pinia'
 import { ref, computed } from 'vue'
 // importo estos dos métodos de firebase
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification } from 'firebase/auth'
 import { auth } from '../firebaseConfig'
 import { useRouter }  from 'vue-router'
 import { useDataBase } from './dataBase'
@@ -17,7 +17,7 @@ export const useUserStore = defineStore('userStore', () => {
 
  const router = useRouter()
 
- const userData = ref({})
+ const userData = ref(null)
  const isLoading = ref(false)
  //loading que usamos para esperar los datos de si el usuario esta registrado
  const loadingSession = ref(false)
@@ -34,13 +34,15 @@ export const useUserStore = defineStore('userStore', () => {
         const { user } = await createUserWithEmailAndPassword(auth, email, password)
         //metemos en user data el emil y el uid que viene del user
         userData.value = {email: user.email, uid: user.uid}
+        await sendEmailVerification(auth.currentUser)
          // una vez el usuario se ha registrado pusheamos a la ruta home 
          // llamando a la variable router con el metodo push
          // router.push('/')
-        router.push('/')
-        console.log(userData)
+        router.push('/login')
+    
     } catch (error) {
-        console.log("register error:", error)
+        console.log("register error:", error.code)
+        return error.code
         
     } finally{
         isLoading.value = false
@@ -54,11 +56,11 @@ export const useUserStore = defineStore('userStore', () => {
     try {
         const { user } = await signInWithEmailAndPassword (auth, email, password)
         userData.value = { email: user.email, uid: user.uid}
-        console.log('antes de push')
         router.push('/')
-        console.log("sign in:" , userData)
+
     } catch (error) {
-      console.log('sign in error')
+      console.log(error.code)
+      return error.code
     
     } finally{
         //cuando ya tengo la info, asigno valor false, para voler a utilizar el boton
