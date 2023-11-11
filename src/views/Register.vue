@@ -1,5 +1,5 @@
 <template>
-    <h1>Register</h1>
+    <h1 class="text-center">Register</h1>
     <!--<button @click="registerUser('Joi')">Ingresar</button>-->
     <!--submit.prevent -> para que no se refresque la pagina-->
     <a-row>
