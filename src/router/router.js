@@ -3,6 +3,7 @@ import Home from '../views/Home.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import Editar from '../views/Editar.vue'
+import Profile from '../views/Profile.vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '../store/user'
 
@@ -36,6 +37,7 @@ const routes = [
     //este id, necesito consumirlo en la vista
     {path: '/login', component: Login, name: 'login'},
     {path: '/register', component: Register, name: 'register'},
+    {path: '/profile', component: Profile, beforeEnter: requireAuth, name: 'profile'},
     {path: '/editar/:id', component: Editar, beforeEnter: requireAuth, name: 'editar'},
 
 ]

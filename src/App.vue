@@ -13,6 +13,13 @@
         >
           <router-link to="/">Home</router-link>
         </a-menu-item>
+
+        <a-menu-item
+          v-if="userData"
+          key="profile"
+        >
+          <router-link to="/profile">Perfil</router-link>
+        </a-menu-item>
         <a-menu-item
           v-if="!userData"
           key="login"

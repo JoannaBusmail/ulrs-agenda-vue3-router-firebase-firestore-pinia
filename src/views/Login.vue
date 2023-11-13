@@ -18,7 +18,7 @@
                 <a-form-item
                     label="Email"
                     name="email"
-                    :rules="[{ required: true, type: 'email', message: 'Ingrese email válido' }]"
+                    :rules="[{ required: true, whitespace: true, type: 'email', message: 'Ingrese email válido' }]"
                 >
                     <a-input v-model:value="formState.email"></a-input>
                 </a-form-item>

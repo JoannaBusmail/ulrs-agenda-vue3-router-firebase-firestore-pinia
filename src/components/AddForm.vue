@@ -2,7 +2,6 @@
     <a-form
         :model="formState"
         @finish="onFinish"
-        @finishFailed="onFinishFailed"
         name="addForm"
         layout="vertical"
         autocomplete="off"
