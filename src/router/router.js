@@ -4,8 +4,10 @@ import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import Editar from '../views/Editar.vue'
 import Profile from '../views/Profile.vue'
+import NotFound from '../views/NotFound.vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '../store/user'
+import { useDataBase } from '../store/dataBase'
 
     //RUTAS PROTEGIDAS
 const requireAuth = async (to, from, next) =>{
@@ -27,6 +29,27 @@ const requireAuth = async (to, from, next) =>{
 
 }
 
+const redirection = async(to, from, next) =>{
+    const userStore = useUserStore()
+    const { loadingSession} = storeToRefs(userStore)
+    const dataBaseStore = useDataBase()
+    const { getUrl } = dataBaseStore
+    console.log(to.params.pathMatch[0])
+
+    loadingSession.value = true
+    const name =  await getUrl(to.params.pathMatch[0])
+    //si es falso, vamos a not found //el falso lo hemos sacado de geturl
+    if(!name) {
+        next()
+        loadingSession.value = false
+    }else {
+        window.location.href = name
+        loadingSession.value = true
+        next()
+    }
+    
+}
+
 const routes = [
 
     //agegamos el beforeEnter -> significa que antes de entrar en esta ruta siemper tiene que
@@ -39,6 +62,7 @@ const routes = [
     {path: '/register', component: Register, name: 'register'},
     {path: '/profile', component: Profile, beforeEnter: requireAuth, name: 'profile'},
     {path: '/editar/:id', component: Editar, beforeEnter: requireAuth, name: 'editar'},
+    {path: '/:pathMatch(.*)*', component: NotFound, beforeEnter:redirection, name: 'redirection'},
 
 ]
 

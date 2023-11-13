@@ -1,6 +1,6 @@
 import { defineStore} from 'pinia'
 import { ref } from 'vue'
-import { collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
 import { auth, db } from '../firebaseConfig'
 import { nanoid } from 'nanoid'
 import { useRouter }  from 'vue-router'
@@ -22,6 +22,31 @@ export const useDataBase = defineStore('dataBaseStore', () => {
     documents.value = []
     loadingDoc.value = false
     }
+
+
+    const getUrl = async (id) => {
+        loadingDoc.value = true
+        try {
+            const docRef = doc(db, 'urls', id)
+            //usamos getDoc para coger un unico documento
+            const docSnap  = await getDoc(docRef)
+            //si el doc no exite le digo que retorne falso para gestionar en router
+            if(!docSnap.exists()){
+                return false
+            }
+    
+            //del documento necesitamos la url, en este caso el name
+            return docSnap.data().name
+
+        } catch (error) {
+            console.log(error)
+            return false
+        } finally {
+            loadingDoc.value =false
+
+        }
+    }
+
 
     const getUrls = async () => {
         try {
@@ -76,11 +101,18 @@ export const useDataBase = defineStore('dataBaseStore', () => {
     
         }
         //usamos add poruque me genera un ID de cada doc
-        const docRef = await addDoc (collection(db, "urls"), objectDoc)
+       /* const docRef = await addDoc (collection(db, "urls"), objectDoc)
         documents.value.push({
          ...objectDoc,
          id:docRef.id
-        })
+        })*/
+        //Ahora lo cambiamos porqu eno queremos un id aleatorio, queremos pasar short como id
+        //cuando pasamos un id especifico usamos setDoc
+        await setDoc(doc(db, "urls", objectDoc.short), objectDoc)
+        documents.value.push({
+            ...objectDoc,
+            id: objectDoc.short
+           })
 
     } catch (error) {
         console.log(error.code)
@@ -182,5 +214,5 @@ export const useDataBase = defineStore('dataBaseStore', () => {
             loadingUrl.value= false
         }
     }
-        return { documents, getUrls, loadingDoc, loadingUrl, addUrl, $reset, deleteUrl, readUrl, updateUrl }
+        return { documents, getUrls, loadingDoc, loadingUrl, addUrl, $reset, deleteUrl, readUrl, updateUrl, getUrl }
 })

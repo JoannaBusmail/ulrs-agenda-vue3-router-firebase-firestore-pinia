@@ -37,6 +37,9 @@
                             @click="item.id && router.push(`editar/${item.id}`)"
                         >Editar
                         </a-button>
+
+                        <a-button @click="copiarPortapapeles(item.id)">Copiar
+                        </a-button>
                     </a-space>
                 </template>
                 <p> {{ item.name }}</p>
@@ -105,6 +108,33 @@ const confirm = async (id) =>
 const cancel = e =>
 {
     message.error('No se elimino')
+}
+
+const copiarPortapapeles = async (id) =>
+{//windo.location me da toda la info de la url, origin me da localhost../ ó nuestro hosting
+    //id es el short name
+    const path = `${window.location.href}${id}`
+    //opcion async await
+    const err = await navigator.clipboard.writeText(path)
+    if (err) {
+        message.error(err)
+    } else {
+        message.success('Se copio en el portapapeles')
+    }
+
+    //opcion then
+    /* 
+     navigator.clipboard
+         .writeText(path)
+         .then(() =>
+         {
+             message.success('Se copio en el portapapeles')
+         })
+         .catch((err) =>
+         {
+             message.error(err)
+         })*/
+
 }
 </script>
 
