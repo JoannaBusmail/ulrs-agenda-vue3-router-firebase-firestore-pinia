@@ -1,34 +1,10 @@
 <template>
-    <a-form
-        :model="formState"
-        @finish="onFinish"
-        @finishFailed="onFinishFailed"
-        name="addForm"
-        layout="vertical"
-        autocomplete="off"
-    >
-
-        <a-form-item
-            label="URL"
-            name="url"
-            :rules="[{
-                required: true, whitespace: true, pattern: /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/,
-                message: 'Ingrese url válida'
-            }]"
-        >
-            <a-input v-model:value="formState.url"></a-input>
-        </a-form-item>
-
-        <a-form-item>
-            <a-button
-                type="primary"
-                html-type="submit"
-                :loading="loadingUrl"
-                :disabled="loadingUrl"
-            >Editar
-            </a-button>
-        </a-form-item>
-    </a-form>
+    <AddForm
+        :formValue="formValue"
+        buttonName="Editar"
+        @onFinish="handleSubmit"
+        @update:inputValue="updateInputValue"
+    ></AddForm>
 </template>
 
 <script setup>
@@ -46,7 +22,7 @@ const { readUrl, updateUrl } = dataBaseStore
 
 //const url = ref('')
 
-const formState = reactive({
+const formValue = reactive({
     url: ''
 })
 
@@ -59,25 +35,27 @@ const formState = reactive({
 //saber de que documento se trata
 onMounted(async () =>
 {
-    formState.url = await readUrl(route.params.id)
+    const url = await readUrl(route.params.id)
+    console.log('Retrieved URL:', url)
+    updateInputValue(url)
 })
 
 
-//le pasamos el id y el name
-/*const handleSubmit = () =>
+const updateInputValue = (value) =>
 {
-    //TODO: Validaciones
-    updateUrl(route.params.id, url.value)
+    console.log('Updating input value with:', value)
+    formValue.url = value
 
-}*/
+}
 
-const onFinish = async () =>
+
+const handleSubmit = async () =>
 {
-    const response = await updateUrl(route.params.id, formState.url)
-    formState.url = ''
+    const response = await updateUrl(route.params.id, formValue.url)
+
     if (!response) {
         return message.success("URL editada con éxito")
     }
-
+    formValue.url = ''
 }
 </script>

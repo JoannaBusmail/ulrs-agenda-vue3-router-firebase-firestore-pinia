@@ -1,7 +1,13 @@
 <template>
     <div>
         <h3>{{ `Hola ${userData?.email}` }}</h3>
-        <AddForm></AddForm>
+        <AddForm
+            :formValue="formValue"
+            buttonName="Agregar"
+            @onFinish="handleSubmit"
+            @update:inputValue="updateInputValue"
+        ></AddForm>
+
         <a-spin v-if="loadingDoc"></a-spin>
 
         <a-space
@@ -53,7 +59,7 @@
 import { useUserStore } from '../store/user'
 import { storeToRefs } from 'pinia'
 import { useDataBase } from '../store/dataBase'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import AddForm from '../components/AddForm.vue'
 import { message } from 'ant-design-vue'
@@ -78,16 +84,29 @@ onMounted(() =>
 })
 
 
-const url = ref('')
+//const url = ref('')
 
-/*const handleSubmit = () =>
-{//TO DO: validaciones de url
-    //le pasamos como argumento la ref url que es el v-model del formulario
-    addUrl(url.value)
-    //limpio input
-    url.value = ''
+const formValue = reactive({
+    url: ''
+})
+
+const updateInputValue = (value) =>
+{
+    formValue.url = value
+}
+
+
+const handleSubmit = async () =>
+{
+    const response = await addUrl(formValue.url)
+    console.log(formValue.url)
+    formValue.url = ''
+    if (!response) {
+        return message.success("URL agregada con éxito")
+    }
+
     console.log('formulario')
-}*/
+}
 
 /*const handleDeleteDoc = (id) =>
 {

@@ -1,12 +1,11 @@
 <template>
     <a-form
-        :model="formState"
-        @finish="onFinish"
+        :model="formValue"
+        @finish="handleSubmit"
         name="addForm"
         layout="vertical"
         autocomplete="off"
     >
-
         <a-form-item
             label="URL"
             name="url"
@@ -15,7 +14,10 @@
                 message: 'Ingrese url válida'
             }]"
         >
-            <a-input v-model:value="formState.url"></a-input>
+            <a-input
+                v-model:value="formValue.url"
+                @change="updateInputValue"
+            ></a-input>
         </a-form-item>
 
         <a-form-item>
@@ -24,37 +26,38 @@
                 html-type="submit"
                 :loading="loadingUrl"
                 :disabled="loadingUrl"
-            >Agregar
-            </a-button>
+            >{{ buttonName }}</a-button>
         </a-form-item>
     </a-form>
 </template>
-
+  
 <script setup>
 import { reactive } from "vue"
+import { defineProps, defineEmits } from "vue"
 import { storeToRefs } from 'pinia'
-import { message } from "ant-design-vue"
 import { useDataBase } from '../store/dataBase'
 
-
-const formState = reactive({
-    url: ''
-})
-
-
-
-
 const dataBaseStore = useDataBase()
-const { addUrl } = dataBaseStore
 const { loadingUrl } = storeToRefs(dataBaseStore)
 
-const onFinish = async () =>
-{
-    const response = await addUrl(formState.url)
-    formState.url = ''
-    if (!response) {
-        return message.success("URL agregada con éxito")
-    }
+const props = defineProps([ "formValue", "buttonName" ])
+const emit = defineEmits([ "onFinish", "update:inputValue" ])
 
+const formState = reactive({
+    url: ""
+})
+
+const updateInputValue = (event) =>
+{
+    const value = event.target.value
+    emit("update:inputValue", value)
+    formState.url = value
 }
+
+const handleSubmit = () =>
+{
+    emit("onFinish", formState.url)
+    formState.url = ''
+};
+
 </script>
