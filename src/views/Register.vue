@@ -1,65 +1,19 @@
 <template>
-    <h1 class="text-center">Register</h1>
+    <UserForm
+        title="Register"
+        buttonText="Registrarse"
+        :formValue="formValue"
+        :showConfirmPassword=true
+        :confirmPasswordRules="confirmPasswordRules"
+        @onFinish="handleSubmit"
+        @update:formValue="updateFormValue"
+    ></UserForm>
     <!--<button @click="registerUser('Joi')">Ingresar</button>-->
     <!--submit.prevent -> para que no se refresque la pagina-->
-    <a-row>
-        <a-col
-            :xs="{ span: 24 }"
-            :sm="{ span: 18, offset: 3 }"
-            :lg="{ span: 12, offset: 6 }"
-        >
-            <a-form
-                :model="formState"
-                @finish="onFinish"
-                @finishFailed="onFinishFailed"
-                name="basicTwo"
-                layout="vertical"
-                autocomplete="off"
-            >
-
-                <a-form-item
-                    label="Email"
-                    name="email"
-                    :rules="[{ required: true, type: 'email', message: 'Ingrese email válido' }]"
-                >
-                    <a-input v-model:value="formState.email"></a-input>
-                </a-form-item>
-                <a-form-item
-                    label="Password"
-                    name="password"
-                    :rules="[{ required: true, min: 6, message: 'Ingrese contraseña con mínimo de 6 caracteres' }]"
-                >
-                    <a-input-password
-                        v-model:value="formState.password"></a-input-password>
-                </a-form-item>
-                <a-form-item
-                    has-feedback
-                    label="Confirm"
-                    name="checkPass"
-                    :rules="{ validator: validatePassword }"
-                >
-                    <a-input
-                        v-model:value="formState.checkPass"
-                        type="password"
-                        autocomplete="off"
-                    />
-                </a-form-item>
-                <a-form-item>
-                    <a-button
-                        :disabled="isLoading"
-                        :loading="isLoading"
-                        type="primary"
-                        html-type="submit"
-                    > Registrar usuario
-                    </a-button>
-                </a-form-item>
-
-            </a-form>
-        </a-col>
-    </a-row>
 </template>
 
 <script setup>
+import UserForm from '../components/UserForm.vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '../store/user'
 import { ref, reactive } from 'vue'
@@ -71,16 +25,42 @@ const userStore = useUserStore()
 const { registerUser } = userStore
 const { isLoading } = storeToRefs(userStore)
 
-const formState = reactive({
+const formValue = reactive({
     password: '',
     email: '',
     checkPass: ''
 })
 
-
-const onFinish = async () =>
+const updateFormValue = (value) =>
 {
-    const error = await registerUser(formState.email, formState.password)
+    console.log("Received data in parent:", value)
+    formValue.email = value.email,
+        formValue.password = value.password,
+        formValue.checkPass = value.checkPass
+
+}
+
+
+const validatePassword = async (_rule, value) =>
+{
+    //cheque que la contraseña no este vacía
+    if (value == '') {
+        return Promise.reject('repita contraseña')
+    }
+    //chequeo que la contraseña coincida con password
+    if (value !== formValue.password) {
+        return Promise.reject('La contraseña no coincide')
+    }
+    return Promise.resolve()
+
+}
+
+
+const confirmPasswordRules = ref({ validator: validatePassword })
+
+const handleSubmit = async () =>
+{
+    const error = await registerUser(formValue.email, formValue.password)
     if (!error) {
         return message.success('Bienvenido, verifica tu email')
     }
@@ -95,28 +75,6 @@ const onFinish = async () =>
     }
 }
 
-
-
-const onFinishFailed = (error) =>
-{
-    console.log("failedlogin:", error)
-}
-
-
-//documentacion antdesign vue
-const validatePassword = async (_rule, value) =>
-{
-    //cheque que la contraseña no este vacía
-    if (value == '') {
-        return Promise.reject('repita contraseña')
-    }
-    //chequeo que la contraseña coincida con password
-    if (value !== formState.password) {
-        return Promise.reject('La contraseña no coincide')
-    }
-    Promise.resolve
-
-}
 
 //validaciones antes de ant design
 /*const email = ref('')

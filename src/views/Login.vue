@@ -1,53 +1,15 @@
 <template>
-    <h1 class="text-center">Login</h1>
-    <a-row>
-        <a-col
-            :xs="{ span: 24 }"
-            :sm="{ span: 18, offset: 3 }"
-            :lg="{ span: 12, offset: 6 }"
-        >
-            <a-form
-                :model="formState"
-                @finish="onFinish"
-                @finishFailed="onFinishFailed"
-                name="basic"
-                layout="vertical"
-                autocomplete="off"
-            >
-
-                <a-form-item
-                    label="Email"
-                    name="email"
-                    :rules="[{ required: true, whitespace: true, type: 'email', message: 'Ingrese email válido' }]"
-                >
-                    <a-input v-model:value="formState.email"></a-input>
-                </a-form-item>
-
-                <a-form-item
-                    label="Password"
-                    name="password"
-                    :rules="[{ required: true, min: 6, message: 'Ingrese contraseña con mínimo de 6 caracteres' }]"
-                >
-                    <a-input-password
-                        v-model:value="formState.password"></a-input-password>
-                </a-form-item>
-                <a-form-item>
-                    <a-button
-                        type="primary"
-                        html-type="submit"
-                        :disabled="isLoading"
-                        :loading="isLoading"
-                    >Acceder
-                    </a-button>
-                </a-form-item>
-
-            </a-form>
-        </a-col>
-    </a-row>
+    <UserForm
+        title="Login"
+        buttonText="Acceder"
+        :formValue="formValue"
+        @onFinish="handleSubmit"
+        @update:formValue="updateFormValue"
+    ></UserForm>
 </template>
 
 <script setup>
-
+import UserForm from '../components/UserForm.vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '../store/user'
 import { ref, reactive, onMounted } from 'vue'
@@ -71,14 +33,22 @@ const { isLoading } = storeToRefs(userStore)
     await signInUser(email.value, password.value)
 }*/
 
-const formState = reactive({
+const formValue = reactive({
     password: '',
     email: ''
 })
 
-const onFinish = async () =>
+const updateFormValue = (value) =>
 {
-    const error = await signInUser(formState.email, formState.password)
+    formValue.email = value.email,
+        formValue.password = value.password
+
+}
+
+
+const handleSubmit = async () =>
+{
+    const error = await signInUser(formValue.email, formValue.password)
     if (!error) {
         return
     }
@@ -104,8 +74,8 @@ const onFinishFailed = (error) =>
 onMounted(() =>
 {
     // Restablece los campos de entrada a blanco cuando se carga la vista de inicio de sesión
-    formState.email = ''
-    formState.password = ''
+    formValue.email = ''
+    formValue.password = ''
 })
 </script>
 
