@@ -61,24 +61,22 @@ import { useUserStore } from './store/user'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 
+//routes
 const route = useRoute()
-//llamamos a la store y desestructuramos la funcion que necesitamos usar
-//esta funcion la usamos en el evento click sobre el boton log out
+
+//user store
 const userStore = useUserStore()
 const { logOut } = userStore
 const { userData, loadingSession } = storeToRefs(userStore)
 
+//in the navigation bar, the selected key is the route name
 const selectedKeys = ref([])
-//para que en el manu de navegacion me marque en que pestaña estoy
-//pongo un watch para observar cambios en la ruta
-//y luego marco como selected keys = al nombre de la ruta
 watch(
   () => route.name,
   () => { selectedKeys.value = [ route.name ] }
 
 
 )
-
 
 </script>
 

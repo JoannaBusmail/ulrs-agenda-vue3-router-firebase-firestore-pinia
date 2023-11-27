@@ -15,37 +15,26 @@ import { useUserStore } from '../store/user'
 import { ref, reactive, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
 
-
+//user store
 const userStore = useUserStore()
 const { signInUser } = userStore
-//agrego ref is loading del sore y la uso para deshabilitar el boton
-// se deshabilita siempre que sea true
 const { isLoading } = storeToRefs(userStore)
 
-//const email = ref('')
-//const password = ref('')
 
-//creo el handleSubmit y aqui llamo a la funcion signInUser de mi store
-//con los parametros que necesito
-/*const handleSubmit = async () =>
-{
-    if (!email.value || password.value.length < 6) { return alert('faltan datos') }
-    await signInUser(email.value, password.value)
-}*/
-
+//reactive
 const formValue = reactive({
     password: '',
     email: ''
 })
 
+//update input value
 const updateFormValue = (value) =>
 {
     formValue.email = value.email,
         formValue.password = value.password
-
 }
 
-
+//submit sign in user method from user store - firebase
 const handleSubmit = async () =>
 {
     const error = await signInUser(formValue.email, formValue.password)
@@ -71,9 +60,9 @@ const onFinishFailed = (error) =>
     console.log("failedlogin:", error)
 }
 
+//reset form value when component is mounted
 onMounted(() =>
 {
-    // Restablece los campos de entrada a blanco cuando se carga la vista de inicio de sesión
     formValue.email = ''
     formValue.password = ''
 })

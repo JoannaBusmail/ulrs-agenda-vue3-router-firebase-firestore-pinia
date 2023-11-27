@@ -13,42 +13,33 @@ import { onMounted, ref, reactive } from 'vue'
 import { useDataBase } from '../store/dataBase'
 import { useRoute } from 'vue-router'
 
-//RUTAS
+//routes
 const route = useRoute()
 
-//databaseStore
+//database store
 const dataBaseStore = useDataBase()
 const { readUrl, updateUrl } = dataBaseStore
 
-//const url = ref('')
-
+//reactive
 const formValue = reactive({
     url: ''
 })
 
-
-
-//uso cilo de vida, por que quiero obtener el nombre de la URl cuando se cargue el componente
-//es async porque hago una llamada a bbdd
-//en laruta me viene el id del documento
-//readUrl me retorna el name (es decir la url) y necesita el argumento Id para 
-//saber de que documento se trata
+// read url through route params
+// and update input value
 onMounted(async () =>
 {
     const url = await readUrl(route.params.id)
-    console.log('Retrieved URL:', url)
     updateInputValue(url)
 })
 
-
+//update input value
 const updateInputValue = (value) =>
 {
-    console.log('Updating input value with:', value)
     formValue.url = value
-
 }
 
-
+//submit update url method from database store
 const handleSubmit = async () =>
 {
     const response = await updateUrl(route.params.id, formValue.url)

@@ -10,6 +10,7 @@ export const useDataBase = defineStore('dataBaseStore', () => {
 
 //router
     const router = useRouter()
+
 //state
     const documents = ref([])
     const loadingDoc = ref(false)
@@ -17,68 +18,55 @@ export const useDataBase = defineStore('dataBaseStore', () => {
 
 
 //actions
-//$reset de pinia no funciona para setip, tengo que crear mi propio metodo reset e importar
+//$reset pinia does not work, create reset method
     const $reset = () =>{
     documents.value = []
     loadingDoc.value = false
     }
 
-
+//get url
     const getUrl = async (id) => {
         loadingDoc.value = true
         try {
             const docRef = doc(db, 'urls', id)
-            //usamos getDoc para coger un unico documento
+            //getDoc firebase method
             const docSnap  = await getDoc(docRef)
-            //si el doc no exite le digo que retorne falso para gestionar en router
             if(!docSnap.exists()){
                 return false
             }
-    
-            //del documento necesitamos la url, en este caso el name
             return docSnap.data().name
 
         } catch (error) {
             console.log(error)
             return false
+
         } finally {
             loadingDoc.value =false
 
         }
     }
 
-
+    //get all urls
     const getUrls = async () => {
         try {
-            //tengo que resetear documents, sino cuando llamo a esta funcion y ya tiene docs cargados
-            //puede mostrar los anteriores y los nuevos
-            // reseteo en logout, pero esta bien mantener esto para no hacer sobreconsumos en la bbdd
+            
             if(documents.value.length !==0) {
                 return
             }
             loadingDoc.value = true
-            //documentacion de firebase
-            //hago query, llamo a mi coleccion, 2 argumentos db -> de firebaseConfig
-            // nombre de nuestra coleccion, el where de la documentacion es para filtrar
-            //filtro que sea mi usuario actual, el que esta logeado
+            //query to get all documents from collection urls where user is equal to auth.currentUser.uid
             const q = query(collection(db, "urls"), where("user", "==", auth.currentUser.uid))
-            //sacado de la documentacion, usamos metodo getDocs para hacer consumo de la bbdd
-            //getDocs recibe la query
-            //usamos await porque e suna consulta a bbdd y tarda
+             //getDocs firebase method
             const querySnapshot = await getDocs(q);
-            //tenemos que recorrerl lo que nos trae la bbdd
+            //querySnapshot is an array of documents
             querySnapshot.forEach((doc) => {
                 console.log(doc.id, doc.data())
-                //subimos a documents lo que nos trae la base de datos
-                //doc.id y doc.data son propiedades de doc, solo que id 
-                //es el id de cada objeto data, por eso va fuera
-                //data es un objeto por eso podemos hacer spread(name, user, short)
+                //push all documents to documents.value
                 documents.value.push({
                     id: doc.id,
                     ...doc.data()
                 })
             })
-
 
         } catch (error) {
             console.log(error)
@@ -87,48 +75,42 @@ export const useDataBase = defineStore('dataBaseStore', () => {
         }
     }
 
+    //add url
     const addUrl = async (name) => {
         loadingUrl.value = true
     
-    try {
-        const objectDoc = {
-            //name viene de la vista de nuestro formulario en home
+         try {
+            const objectDoc = {
             name: name,
-            //nanoid es una libreria que nos da caracteres aleatorios, le pasamos como argumento la cantidad de caracteres que queremos
+            //nanoid library to generate a random character string(pass 6 characters)
             short: nanoid(6),
-            // el usuario actual, el autenticado por firebase
+            //auth.currentUser.uid is the user id
             user: auth.currentUser.uid
     
-        }
-        //usamos add poruque me genera un ID de cada doc
-       /* const docRef = await addDoc (collection(db, "urls"), objectDoc)
-        documents.value.push({
-         ...objectDoc,
-         id:docRef.id
-        })*/
-        //Ahora lo cambiamos porqu eno queremos un id aleatorio, queremos pasar short como id
-        //cuando pasamos un id especifico usamos setDoc
-        await setDoc(doc(db, "urls", objectDoc.short), objectDoc)
-        documents.value.push({
-            ...objectDoc,
-            id: objectDoc.short
-           })
+            }
+            //setDoc firebase method
+            //if we have specified id we use setDoc, if not we use addDoc
+            await setDoc(doc(db, "urls", objectDoc.short), objectDoc)
+                documents.value.push({
+                ...objectDoc,
+                id: objectDoc.short
+             })
 
-    } catch (error) {
-        console.log(error.code)
+         } catch (error) {
+            console.log(error.code)
         
-    } finally {
-        loadingUrl.value=false
-    }
+         } finally {
+            loadingUrl.value=false
+         }
 
     }
 
-    //le pasamos el id, ya que necesitamos saber qué documento estamos viendo
+    //read url
     const readUrl = async (id) => {
         loadingDoc.value = true
         try {
             const docRef = doc(db, 'urls', id)
-            //usamos getDoc para coger un unico documento
+            //getDoc firebase method
             const docSnap  = await getDoc(docRef)
 
             if(!docSnap.exists()){
@@ -138,7 +120,7 @@ export const useDataBase = defineStore('dataBaseStore', () => {
             if(docSnap.data().user !== auth.currentUser.uid){
                 throw new Error ("no le pertenece ese documento")
             }
-            //del documento necesitamos la url, en este caso el name
+            //need to return the url
             return docSnap.data().name
 
         } catch (error) {
@@ -149,7 +131,8 @@ export const useDataBase = defineStore('dataBaseStore', () => {
         }
     }
 
-    // necesitamos el id del documento que queremos actualizar y la url (name)
+    //update url
+    //need id and name(url) to update
     const updateUrl = async(id, name) => {
         try {
             const docRef = doc(db, 'urls', id)
@@ -157,20 +140,15 @@ export const useDataBase = defineStore('dataBaseStore', () => {
             if(!docSnap.exists()){
                 throw new Error ("no existe el doc")
             }
-        //si es el usuario autenticado podemos actualizar la url, en este caso naem
-        // usamos map, para recorrer el array y hacer una funcion sobre cada elemento
-        //si el id del item es igual al id que le pasemos, entonces devolvemos todo el objeto de item y el name cambiado
-        //si no coincide el id, devolvemos todo item
-        //usamos map porque debe devolver todos los elementos de mi array, filter en cambio puede eliminar objetos del array
+            //check if the user is the author
             if(docSnap.data().user === auth.currentUser.uid){
                 await updateDoc(docRef, {
                     name:name
                 })
                 documents.value = documents.value.map((item) =>{
                    return item.id === id ? {...item, name:name} : item
-                    //una vez actualizado pusheamos al usuario a la pagina de inicio
-                
                 })
+                //redirect to home
                 router.push('/')
             } else {
                 throw new Error ("no eres el autor")
@@ -179,38 +157,37 @@ export const useDataBase = defineStore('dataBaseStore', () => {
             
         } catch (error) {
             console.log(error)
-        }finally {
+        } finally {
 
         }
     }
-    // le pasamos como argumento el ID de la colleccion
-    //el id que hemos agregado en addUrl
+  
+    //delete url
     const deleteUrl = async (id) => {
         loadingUrl.value = true
         try {
-            //pongo esto en una constante por que lo voy a usar en varios métodos de firestore
+            //docRef is a reference to the document
             const docRef = doc(db, 'urls', id)
-            //hago verificaciones antes de eliminar
-            //existe el docSnap ---viene de la documentacion de firestore
-            //getDoc es de firestore
+            //getDoc firebase method
+            // do verification exits?, auth.currentUser.uid is the user id
             const docSnap  = await getDoc(docRef)
             if(!docSnap.exists()){
                 throw new Error ("no existe el doc")
             }
-            //es el usuario autenticado
-            //data() viene de firebase --- ver getDocs
+        
             if(docSnap.data().user !== auth.currentUser.uid){
                 throw new Error ("no le pertenece ese documento")
             }
 
-            //esto lo elimina de la bbdd, por tanto tengo que refrescar la vista para ver los efectos
+            //delete from ddbb
             await deleteDoc(docRef)
-            //esto lo elimina de la vista
+            //delete from documents.value in views
             documents.value = documents.value.filter(item=>item.id !==id)
+
         } catch (error) {
             console.log(error.code)
             return error.message
-        }finally {
+        } finally {
             loadingUrl.value= false
         }
     }

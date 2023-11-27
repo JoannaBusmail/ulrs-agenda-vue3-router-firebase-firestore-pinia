@@ -59,15 +59,14 @@
 import { useUserStore } from '../store/user'
 import { storeToRefs } from 'pinia'
 import { useDataBase } from '../store/dataBase'
-import { onMounted, ref, reactive } from 'vue'
+import { onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import AddForm from '../components/AddForm.vue'
 import { message } from 'ant-design-vue'
 
 //router
-// Para el boton edita necesito pushear la ruta a editar y coger el ID del usuario
-const router = useRouter()
 
+const router = useRouter()
 
 //user store
 const userStore = useUserStore()
@@ -78,6 +77,7 @@ const dataBaseStore = useDataBase()
 const { getUrls, addUrl, deleteUrl } = dataBaseStore
 const { loadingDoc, loadingUrl, documents } = storeToRefs(dataBaseStore)
 
+// geturls from database store when component is mounted
 onMounted(() =>
 {
     getUrls()
@@ -85,17 +85,17 @@ onMounted(() =>
 
 
 //const url = ref('')
-
 const formValue = reactive({
     url: ''
 })
 
+//update input value
 const updateInputValue = (value) =>
 {
     formValue.url = value
 }
 
-
+//submit add url method from database store
 const handleSubmit = async () =>
 {
     const response = await addUrl(formValue.url)
@@ -108,11 +108,7 @@ const handleSubmit = async () =>
     console.log('formulario')
 }
 
-/*const handleDeleteDoc = (id) =>
-{
-    deleteUrl(id)
-}*/
-
+//confirm delete url method from database store
 const confirm = async (id) =>
 {
     const error = await deleteUrl(id)
@@ -124,35 +120,22 @@ const confirm = async (id) =>
     }
 
 }
+//cancel delete url method from database store
 const cancel = e =>
 {
     message.error('No se elimino')
 }
 
+//copiar portapapeles
 const copiarPortapapeles = async (id) =>
-{//windo.location me da toda la info de la url, origin me da localhost../ ó nuestro hosting
-    //id es el short name
+{
     const path = `${window.location.href}${id}`
-    //opcion async await
     const err = await navigator.clipboard.writeText(path)
     if (err) {
         message.error(err)
     } else {
         message.success('Se copio en el portapapeles')
     }
-
-    //opcion then
-    /* 
-     navigator.clipboard
-         .writeText(path)
-         .then(() =>
-         {
-             message.success('Se copio en el portapapeles')
-         })
-         .catch((err) =>
-         {
-             message.error(err)
-         })*/
 
 }
 </script>

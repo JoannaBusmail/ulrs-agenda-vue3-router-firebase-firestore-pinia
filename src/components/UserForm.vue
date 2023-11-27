@@ -68,29 +68,26 @@
 <script setup>
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '../store/user'
-import { ref, reactive } from 'vue'
-import { message } from 'ant-design-vue'
-import { defineProps, defineEmits } from "vue"
-
-
+import { reactive } from 'vue'
 
 // store
 const userStore = useUserStore()
-const { registerUser } = userStore
 const { isLoading } = storeToRefs(userStore)
 
+//props
 const props = defineProps([ 'title', 'buttonText', 'formValue', 'showConfirmPassword', 'confirmPasswordRules' ])
 
-
+//emits
 const emit = defineEmits([ "onFinish", "update:formValue" ])
 
+//reactive
 const formState = reactive({
     password: '',
     email: '',
     checkPass: ''
 })
 
-
+//update form value
 const updateFormValue = (field, event) =>
 {
     if (event && event.target) {
@@ -100,7 +97,7 @@ const updateFormValue = (field, event) =>
     }
 }
 
-
+//submit form   
 const handleSubmit = () =>
 {
     if (props.showConfirmPassword) {

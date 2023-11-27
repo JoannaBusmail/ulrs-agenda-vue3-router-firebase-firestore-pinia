@@ -79,6 +79,7 @@ import { storeToRefs } from 'pinia'
 import { message } from 'ant-design-vue'
 import { ref } from 'vue'
 
+// user store
 const userStore = useUserStore()
 const { userData } = storeToRefs(userStore)
 const { updateUserProfile, updateImage } = userStore
@@ -93,6 +94,7 @@ const handleChange = (info) =>
     }
 }
 
+//validate image before upload
 const beforeUpload = (file) =>
 {
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
@@ -111,6 +113,7 @@ const beforeUpload = (file) =>
     return false
 }
 
+//update proflie from store
 const onFinish = async () =>
 {
     const error = await updateUserProfile(userStore.userData.displayName, fileList.value[ 0 ])

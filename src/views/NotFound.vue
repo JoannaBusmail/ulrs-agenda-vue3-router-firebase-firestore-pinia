@@ -13,8 +13,11 @@
 <script setup>
 import { useRouter } from 'vue-router'
 
+//router
 const router = useRouter()
 
+
+//back to home
 const back = () =>
 {
     router.push('/')
